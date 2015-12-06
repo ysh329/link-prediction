@@ -13,6 +13,8 @@ __author__ = 'yuens'
 from mypackage.class_initialization_and_load_parameter import *
 from mypackage.class_create_database_table import *
 from mypackage.class_read_csv_input_data_save_to_database import *
+from mypackage.class_create_spark import *
+from mypackage.class_compute_node_property import *
 ################################ PART3 MAIN ###########################################
 def main():
     # class_initialization_and_load_parameter
@@ -21,7 +23,8 @@ def main():
     ParameterLoader = InitializationAndLoadParameter()
 
     network_name_list, network_type_list, is_directed_list,\
-    database_name, connection_table_name, node_table_name = ParameterLoader\
+    database_name, connection_table_name, node_table_name,\
+    pyspark_app_name = ParameterLoader\
         .load_parameter(config_data_dir = config_data_dir)
 
 
@@ -34,7 +37,7 @@ def main():
                          node_table_name = node_table_name)
 
 
-
+    """
     # class_read_csv_input_data_save_to_database
     CSVReader = CSVDataSaver(database_name = database_name)
     CSVReader.read_csv_to_database(database_name = database_name,\
@@ -42,6 +45,19 @@ def main():
                                    network_name_list = network_name_list,\
                                    network_type_list = network_type_list,\
                                    is_directed_list = is_directed_list)
+    """
+
+
+    # class_create_spark
+    SparkCreator = CreateSpark(pyspark_app_name = pyspark_app_name)
+    pyspark_sc = SparkCreator.return_spark_context()
+
+
+
+    # class_compute_node_property
+    Computer = ComputeNodeProperty(database_name = database_name, pyspark_sc = pyspark_sc)
+    Computer.read_connection_data_in_database(database_name = database_name,\
+                                              connection_table_name = connection_table_name)
 ################################ PART4 EXECUTE ##################################
 if __name__ == "__main__":
     main()
