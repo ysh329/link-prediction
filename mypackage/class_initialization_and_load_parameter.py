@@ -90,7 +90,10 @@ class InitializationAndLoadParameter(object):
         is_directed_list = map(int, conf.get("basic", "is_directed_str").replace(" ", "").split(","))
         logging.info("is_directed_list:{0}".format(is_directed_list))
 
-        return network_name_list, network_type_list, is_directed_list, database_name, connection_table_name, node_table_name
+        pyspark_app_name = conf.get("basic", "pyspark_app_name")
+        logging.info("pyspark_app_name:{0}".format(pyspark_app_name))
+
+        return network_name_list, network_type_list, is_directed_list, database_name, connection_table_name, node_table_name, pyspark_app_name
 
 
 ################################### PART3 CLASS TEST ##################################
