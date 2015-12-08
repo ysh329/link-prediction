@@ -96,8 +96,16 @@ class CreateDatabaseTable(object):
                                 network_type VARCHAR(20),
                                 is_directed INT(11),
                                 node_id INT(11),
-                                connect_node TEXT,
-                                connect_node_num INT(11),
+                                degree TEXT,
+                                degree_num INT(11),
+                                in_degree TEXT,
+                                in_degree_num INT(11),
+                                out_degree TEXT,
+                                out_degree_num INT(11),
+                                normalized_degree FLOAT,
+                                closenesss_centrality FLOAT,
+                                between_centrality FLOAT,
+                                eigen_vector_centrality FLOAT,
                                 UNIQUE (node_record_id))""".format(node_table_name = node_table_name))
         sqls.append("""CREATE INDEX node_id_idx ON {node_table_name}(node_id)""".format(node_table_name = node_table_name))
 

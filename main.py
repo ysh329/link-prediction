@@ -56,8 +56,9 @@ def main():
 
     # class_compute_node_property
     Computer = ComputeNodeProperty(database_name = database_name, pyspark_sc = pyspark_sc)
-    Computer.read_connection_data_in_database(database_name = database_name,\
-                                              connection_table_name = connection_table_name)
+    network_rdd_list = Computer.read_connection_data_in_database(database_name = database_name,\
+                                                                 connection_table_name = connection_table_name)
+    Computer.compute_degree_in_different_network(network_rdd_list = network_rdd_list)
 ################################ PART4 EXECUTE ##################################
 if __name__ == "__main__":
     main()
