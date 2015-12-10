@@ -184,9 +184,9 @@ network_type_list = ["bio", "bio",\
                      "info", "info",\
                      "social", "social"]
 
-is_directed_list = [0, 1,\
-                    0, 1,\
-                    0, 1]
+is_directed_list = [1, 0,\
+                    1, 0,\
+                    1, 0]
 
 CSVReader = CSVDataSaver(database_name = database_name)
 CSVReader.read_csv_to_database(database_name = database_name,\

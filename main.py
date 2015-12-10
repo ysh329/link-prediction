@@ -55,10 +55,20 @@ def main():
 
 
     # class_compute_node_property
+    # degree_str, degree_num, in_degree_str, in_degree_num, out_degree_str, out_degree_num
+    # in_degree_rate, normalized_degree
     Computer = ComputeNodeProperty(database_name = database_name, pyspark_sc = pyspark_sc)
+
     network_rdd_list = Computer.read_connection_data_in_database(database_name = database_name,\
                                                                  connection_table_name = connection_table_name)
-    Computer.compute_degree_in_different_network(network_rdd_list = network_rdd_list)
+    node_data_rdd_list = Computer.compute_degree_in_different_network(network_rdd_list = network_rdd_list)
+    Computer.save_node_data_rdd_list_to_database(database_name = database_name,\
+                                                 node_table_name = node_table_name,\
+                                                 node_data_rdd_list = node_data_rdd_list)
+
+
+
+    # class_
 ################################ PART4 EXECUTE ##################################
 if __name__ == "__main__":
     main()

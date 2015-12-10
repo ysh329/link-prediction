@@ -95,12 +95,13 @@ class CreateDatabaseTable(object):
                                 node_record_id INT(11) AUTO_INCREMENT PRIMARY KEY,
                                 network_type VARCHAR(20),
                                 is_directed INT(11),
-                                node_id INT(11),
-                                degree TEXT,
+                                node INT(11),
+                                degree_str TEXT,
                                 degree_num INT(11),
-                                in_degree TEXT,
+                                in_degree_str TEXT,
                                 in_degree_num INT(11),
-                                out_degree TEXT,
+                                in_degree_rate FLOAT,
+                                out_degree_str TEXT,
                                 out_degree_num INT(11),
                                 normalized_degree FLOAT,
                                 closenesss_centrality FLOAT,
@@ -117,7 +118,24 @@ class CreateDatabaseTable(object):
                                 connection_id INT(11),
                                 node1 INT(11),
                                 node2 INT(11),
-                                UNIQUE (connection_record_id))""".format(connection_table_name = connection_table_name))
+
+                                common_neighbor_str TEXT,
+                                common_neighbor_num INT(11),
+                                common_neighbor_rate FLOAT,
+                                sim_common_neighbor FLOAT,
+                                sim_resource_allocation FLOAT,
+                                sim_pa FLOAT,
+
+                                sim_lp FLOAT,
+                                sim_katz FLOAT,
+                                sim_lhn2 FLOAT,
+
+                                sim_act FLOAT,
+                                sim_rwr FLOAT,
+                                sim_lrw FLOAT,
+                                sim_srw FLOAT,
+                                UNIQUE (connection_record_id),
+                                CONSTRAINT network_record UNIQUE (network_type, is_directed, node1, node2))""".format(connection_table_name = connection_table_name))
         sqls.append("""CREATE INDEX connection_id_idx ON {connection_table_name}(connection_id)""".format(connection_table_name = connection_table_name))
 
         for sql_idx in range(len(sqls)):
