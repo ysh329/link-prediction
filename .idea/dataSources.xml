@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="1941443183">
+  <component name="DataSourceManagerImpl" format="xml" hash="3990758650">
     <data-source source="LOCAL" name="MySQL - LinkPredictionDB@localhost" uuid="7e2bf68b-2bd3-4cb9-ba0d-eaf9e0debd4e">
       <driver-ref>mysql</driver-ref>
       <synchronize>true</synchronize>

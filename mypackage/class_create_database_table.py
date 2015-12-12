@@ -107,7 +107,8 @@ class CreateDatabaseTable(object):
                                 closenesss_centrality FLOAT,
                                 between_centrality FLOAT,
                                 eigen_vector_centrality FLOAT,
-                                UNIQUE (node_record_id))""".format(node_table_name = node_table_name))
+                                UNIQUE (node_record_id),
+                                CONSTRAINT node_record UNIQUE (network_type, is_directed, node))""".format(node_table_name = node_table_name))
         sqls.append("""CREATE INDEX node_id_idx ON {node_table_name}(node_id)""".format(node_table_name = node_table_name))
 
         # Create connection_table_name
