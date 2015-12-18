@@ -67,7 +67,7 @@ class CSVDataSaver(object):
         # Get nodes from csv file
         # sub-function
         def get_node_pair_node_tuple_list(network_name):
-            with open(network_name,'r') as f:
+            with open(network_name, 'r') as f:
                 reader = csv.reader(f)
                 node_pair_tuple_list = map(lambda node_pair_list: (node_pair_list[0], node_pair_list[1]), reader)
                 node_pair_tuple_list = map(lambda (node1, node2): (int(node1), int(node2)), node_pair_tuple_list[1:])
@@ -176,6 +176,7 @@ class CSVDataSaver(object):
 # Initialization
 database_name = "LinkPredictionDB"
 connection_table_name = "connection_table"
+'''
 network_name_list = ["../data/input/Bio-network_directed.csv", "../data/input/Bio-network_undirected.csv",\
                      "../data/input/Info-network_directed.csv", "../data/input/Info-network_undirected.csv",\
                      "../data/input/Social network_directed.csv", "../data/input/Social network_undirected.csv"]
@@ -187,6 +188,10 @@ network_type_list = ["bio", "bio",\
 is_directed_list = [1, 0,\
                     1, 0,\
                     1, 0]
+'''
+network_name_list = ["../data/input/Social network_undirected.csv"]
+network_type_list = ["social"]
+is_directed_list = [0]
 
 CSVReader = CSVDataSaver(database_name = database_name)
 CSVReader.read_csv_to_database(database_name = database_name,\

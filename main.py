@@ -15,6 +15,8 @@ from mypackage.class_create_database_table import *
 from mypackage.class_read_csv_input_data_save_to_database import *
 from mypackage.class_create_spark import *
 from mypackage.class_compute_node_property import *
+from mypackage.class_compute_edge_property import *
+from mypackage.class_data_collation_for_database import *
 ################################ PART3 MAIN ###########################################
 def main():
     # class_initialization_and_load_parameter
@@ -37,7 +39,7 @@ def main():
                          node_table_name = node_table_name)
 
 
-    """
+    '''
     # class_read_csv_input_data_save_to_database
     CSVReader = CSVDataSaver(database_name = database_name)
     CSVReader.read_csv_to_database(database_name = database_name,\
@@ -45,7 +47,7 @@ def main():
                                    network_name_list = network_name_list,\
                                    network_type_list = network_type_list,\
                                    is_directed_list = is_directed_list)
-    """
+    '''
 
 
     # class_create_spark
@@ -53,7 +55,7 @@ def main():
     pyspark_sc = SparkCreator.return_spark_context()
 
 
-
+    '''
     # class_compute_node_property
     # degree_str, degree_num, in_degree_str, in_degree_num, out_degree_str, out_degree_num
     # in_degree_rate, normalized_degree
@@ -65,10 +67,29 @@ def main():
     Computer.save_node_data_rdd_list_to_database(database_name = database_name,\
                                                  node_table_name = node_table_name,\
                                                  node_data_rdd_list = node_data_rdd_list)
+    '''
 
 
+    '''
+    # class_compute_edge_property
+    EdgeComputer = ComputeEdgeProperty(database_name = database_name,\
+                                       pyspark_sc = pyspark_sc)
+    EdgeComputer.compute_common_degree_in_different_network(database_name = database_name,\
+                                                            node_table_name = node_table_name,\
+                                                            connection_table_name = connection_table_name)
+    '''
 
-    # class_
+
+    # class_data_collation_for_database
+    DC = DataCollationInDB()
+    node_tuple_list, connection_tuple_list = DC\
+        .get_data_from_database(database_name = database_name,\
+                                node_table_name = node_table_name,\
+                                connection_table_name = connection_table_name)
+    DC.sql_generator_for_all_connection(database_name = database_name,\
+                                        connection_table_name = connection_table_name,\
+                                        node_tuple_list = node_tuple_list,\
+                                        connection_tuple_list = connection_tuple_list)
 ################################ PART4 EXECUTE ##################################
 if __name__ == "__main__":
     main()

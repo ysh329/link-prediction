@@ -117,13 +117,31 @@ class CreateDatabaseTable(object):
                                 network_type VARCHAR(20),
                                 is_directed INT(11),
                                 connection_id INT(11),
+
                                 node1 INT(11),
+                                node1_degree_str TEXT,
+                                node1_degree_num INT(11),
+                                node1_in_degree_str TEXT,
+                                node1_in_degree_num INT(11),
+                                node1_out_degree_str TEXT,
+                                node1_out_degree_num INT(11),
+
                                 node2 INT(11),
+                                node2_degree_str TEXT,
+                                node2_degree_num INT(11),
+                                node2_in_degree_str TEXT,
+                                node2_in_degree_num INT(11),
+                                node2_out_degree_str TEXT,
+                                node2_out_degree_num INT(11),
 
                                 common_neighbor_str TEXT,
                                 common_neighbor_num INT(11),
-                                common_neighbor_rate FLOAT,
+                                common_neighbor_rate FLOAT
+                                ,
                                 sim_common_neighbor FLOAT,
+                                sim_salton_index FLOAT,
+
+
                                 sim_resource_allocation FLOAT,
                                 sim_pa FLOAT,
 

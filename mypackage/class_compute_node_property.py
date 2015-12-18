@@ -385,6 +385,7 @@ class ComputeNodeProperty(object):
         info_directed_node_data_tuple_rdd, info_undirected_node_data_tuple_rdd = node_data_rdd_list[2], node_data_rdd_list[3]
         social_directed_node_data_tuple_rdd, social_undirected_node_data_tuple_rdd = node_data_rdd_list[4], node_data_rdd_list[5]
 
+
         # generate sql from rdd
         # bio
         bio_directed_node_sql_rdd = bio_directed_node_data_tuple_rdd\
@@ -426,7 +427,7 @@ class ComputeNodeProperty(object):
             .map(lambda node_data_tuple: sql_generator(database_name = database_name,\
                                                        node_table_name = node_table_name,\
                                                        network_type = "info",\
-                                                       is_directed = 1,\
+                                                       is_directed = 0,\
                                                        node_data_tuple = node_data_tuple\
                                                        )\
                  )
@@ -446,11 +447,12 @@ class ComputeNodeProperty(object):
         logging.info("social_directed_node_sql_rdd.persist().is_cached:{0}".format(social_directed_node_sql_rdd.persist().is_cached))
         logging.info("social_directed_node_sql_rdd.count():{0}".format(social_directed_node_sql_rdd.count()))
         logging.info("social_directed_node_sql_rdd.take(3):{0}".format(social_directed_node_sql_rdd.take(3)))
+
         social_undirected_node_sql_rdd = social_undirected_node_data_tuple_rdd\
             .map(lambda node_data_tuple: sql_generator(database_name = database_name,\
                                                        node_table_name = node_table_name,\
                                                        network_type = "social",\
-                                                       is_directed = 1,\
+                                                       is_directed = 0,\
                                                        node_data_tuple = node_data_tuple\
                                                        )\
                  )
@@ -462,6 +464,7 @@ class ComputeNodeProperty(object):
         node_sql_rdd_list = [bio_directed_node_sql_rdd, bio_undirected_node_sql_rdd,\
                              info_directed_node_sql_rdd, info_undirected_node_sql_rdd,\
                              social_directed_node_sql_rdd, social_undirected_node_sql_rdd]
+
         cursor = self.con.cursor()
         success_update = 0
         failure_update = 0
@@ -496,23 +499,26 @@ class ComputeNodeProperty(object):
         # un-persist rdd previously persisted rdd
         logging.info("bio_directed_node_sql_rdd.unpersist().is_cached:{0}".format(bio_directed_node_sql_rdd.unpersist().is_cached))
         logging.info("bio_undirected_node_sql_rdd.unpersist().is_cached:{0}".format(bio_undirected_node_sql_rdd.unpersist().is_cached))
-        logging.info("info_directed_node_sql_rdd.persist().is_cached:{0}".format(info_directed_node_sql_rdd.persist().is_cached))
-        logging.info("info_undirected_node_sql_rdd.persist().is_cached:{0}".format(info_undirected_node_sql_rdd.persist().is_cached))
-        logging.info("social_directed_node_sql_rdd.persist().is_cached:{0}".format(social_directed_node_sql_rdd.persist().is_cached))
-        logging.info("social_undirected_node_sql_rdd.persist().is_cached:{0}".format(social_undirected_node_sql_rdd.persist().is_cached))
+        logging.info("info_directed_node_sql_rdd.persist().is_cached:{0}".format(info_directed_node_sql_rdd.unpersist().is_cached))
+        logging.info("info_undirected_node_sql_rdd.persist().is_cached:{0}".format(info_undirected_node_sql_rdd.unpersist().is_cached))
+        logging.info("social_directed_node_sql_rdd.persist().is_cached:{0}".format(social_directed_node_sql_rdd.unpersist().is_cached))
+        logging.info("social_undirected_node_sql_rdd.persist().is_cached:{0}".format(social_undirected_node_sql_rdd.unpersist().is_cached))
 
-
-    def compute_common_node_in_different_network(self, database_name, connection_table_name):
-        #def get_
-        pass
 
 ################################### PART3 CLASS TEST ##################################
-"""
+'''
 # Initialization
 database_name = "LinkPredictionDB"
 connection_table_name = "connection_table"
+node_table_name = "node_table"
+from pyspark import SparkContext
+pyspark_sc = SparkContext()
 
-Computer = ComputeNodeProperty(database_name = database_name)
-Computer.read_connection_data_in_database(database_name = database_name,\
-                                          connection_table_name = connection_table_name)
-"""
+Computer = ComputeNodeProperty(database_name = database_name, pyspark_sc = pyspark_sc)
+network_rdd_list = Computer.read_connection_data_in_database(database_name = database_name,\
+                                                             connection_table_name = connection_table_name)
+node_data_rdd_list = Computer.compute_degree_in_different_network(network_rdd_list = network_rdd_list)
+Computer.save_node_data_rdd_list_to_database(database_name = database_name,\
+                                             node_table_name = node_table_name,\
+                                             node_data_rdd_list = node_data_rdd_list)
+'''

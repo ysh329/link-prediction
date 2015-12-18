@@ -18,6 +18,7 @@ import MySQLdb
 import time
 from operator import add
 import networkx as nx
+from Tkinter import _flatten
 ################################### PART2 CLASS && FUNCTION ###########################
 class ComputeEdgeProperty(object):
     def __init__(self, database_name, pyspark_sc):
@@ -123,84 +124,103 @@ class ComputeEdgeProperty(object):
             return node_tuple_list, connection_tuple_list
 
         # sub-function
-        def compute_common_degree_in_network(network_type, is_directed):
-            pass
-
-        # sub-function
-        def create_graph_for_network(network_type, is_directed, connection_tuple_list):
-            try:
-                edge_tuple_list = filter(lambda (network_type_,\
-                                                    is_directed_,\
-                                                    node1,\
-                                                    node2): network_type_ == network_type and is_directed_ == is_directed,\
-                                         connection_tuple_list)
-                logging.info("len(edge_tuple_list):{0}".format(len(edge_tuple_list)))
-                logging.info("edge_tuple_list[:3]):{0}".format(edge_tuple_list[:3]))
-                if is_directed == 1:
-                    G = nx.DiGraph()
-                else:
-                    G = nx.Graph()
-                map(lambda (network_type, is_directed, node1, node2): G.add_edge(node1, node2), edge_tuple_list)
-                logging.info("G:{0}".format(G))
-            except Exception as e:
-                logging.error("Failed to create graph for {network_type} directed:{is_directed} network".format(network_type = network_type, is_directed = is_directed))
-                logging.error(e)
-                return None
-            return G
-
-        # sub-function
-        def find_common_node_in_graph(G, network_type, is_directed, node_tuple_list):
-            common_neighbor_num_list = []
-
-            node_num = len(G.nodes())
-            edge_tuple_list = G.edges()
-            logging.info("G.nodes()[:3]:{0}".format(G.nodes()[:3]))
-            logging.info("node_num:{0}".format(node_num))
-            logging.info("len(edge_tuple_list)".format(len(edge_tuple_list)))
-            logging.info("edge_tuple_list[:3]:{0}".format(edge_tuple_list[:3]))
-
+        def compute_common_degree_in_network(network_type, is_directed, node_tuple_list, connection_tuple_list):
+            node_tuple_list = filter(lambda (network_type_,\
+                                                is_directed_,\
+                                                node,\
+                                                degree_str,\
+                                                in_degree_str,\
+                                                out_degree_str): network_type_ == network_type and is_directed_ == is_directed,\
+                                     node_tuple_list\
+                                     )
+            edge_tuple_list = filter(lambda (network_type_,\
+                                                is_directed_,\
+                                                node1,\
+                                                node2): network_type_ == network_type and is_directed_ == is_directed,\
+                                     connection_tuple_list\
+                                     )
+            edge_tuple_list_length = len(edge_tuple_list)
             success_compute = 0
             failure_compute = 0
-            node_and_neighbor_node_list_tuple_list = map(lambda node: (node, G.neighbors(node)), G.nodes())
-            edge_tuple_list_length = len(edge_tuple_list)
+
+            common_degree_str_list_in_network = []
+            common_degree_num_list_in_network = []
+            common_edge_tuple_list_in_network = []
+            common_degree_rate_list_in_network = []
 
             for edge_idx in xrange(len(edge_tuple_list)):
                 edge_tuple = edge_tuple_list[edge_idx]
-                node1 = edge_tuple[0]
-                node2 = edge_tuple[1]
+                node1 = edge_tuple[2]
+                node2 = edge_tuple[3]
                 if (edge_idx % 1000 == 0 and edge_idx > 998) or (edge_idx == edge_tuple_list_length-1):
-                    logging.info("============== Computer common node of {edge_idx}th edge in {network_type}.{is_directed} network==============".format(edge_idx = edge_idx, network_type = network_type, is_directed = is_directed))
+                    logging.info("============== Computer common node of {edge_idx}th edge in {network_type}.{is_directed} network ==============".format(edge_idx = edge_idx, network_type = network_type, is_directed = is_directed))
                     logging.info("edge_index:{idx}, finish rate:{rate}".format(idx = edge_idx, rate = float(edge_idx+1)/edge_tuple_list_length))
                     logging.info("success_rate:{success_rate}".format(success_rate = success_compute / float(success_compute + failure_compute + 0.0001)))
                     logging.info("success_update:{success}, failure_update:{failure}".format(success = success_compute, failure = failure_compute))
+
+
                 try:
-                    node1_and_node1_neighbor_list_tuple = filter(lambda (node, neighbor_node_list): node == node1, node_and_neighbor_node_list_tuple_list)[0]
-                    node1_neighbor_list = node1_and_node1_neighbor_list_tuple[1]
-
-                    node2_and_node2_neighbor_list_tuple = filter(lambda (node, neighbor_node_list): node == node2, node_and_neighbor_node_list_tuple_list)[0]
-                    node2_neighbor_list = node2_and_node2_neighbor_list_tuple[1]
-
-                    if len(node1_neighbor_list) <= len(node2_neighbor_list):
-                        common_neighbor_num = map(lambda node1_neighbor_node: node1_neighbor_node in node2_neighbor_list, node1_neighbor_list).count(True)
-                    else:
-                        common_neighbor_num = map(lambda node2_neighbor_node: node2_neighbor_node in node1_neighbor_list, node2_neighbor_list).count(True)
-                    common_neighbor_num_list.append(common_neighbor_num)
-                    success_compute = success_compute + 1
+                    node1_and_degree_str_list = filter(lambda (network_type,\
+                                                                  is_directed,\
+                                                                  node,\
+                                                                  degree_str,\
+                                                                  in_degree_str,\
+                                                                  out_degree_str): node == node1,\
+                                                       node_tuple_list)[0]
                 except Exception as e:
-                    logging.error("Failed to compute common node for {network}.{is_directed} for edge{edge}.".format(network = network_type, is_directed = is_directed), edge = edge_tuple)
-                    logging.error(e)
                     failure_compute = failure_compute + 1
+                    logging.error(e)
                     continue
-            edge_and_common_neighbor_num_and_common_neighbor_rate_tuple_list = map(lambda (node1, node2), common_neighbor_num: (node1,\
-                                                                                                                                node2,\
-                                                                                                                                common_neighbor_num,\
-                                                                                                                                float(common_neighbor_num)/node_num),\
-                                                                                   edge_tuple_list, common_neighbor_num_list\
-                                                                                   )
-            logging.info("len(edge_and_common_neighbor_num_and_common_neighbor_rate_tuple_list):{0}".format(len(edge_and_common_neighbor_num_and_common_neighbor_rate_tuple_list)))
-            logging.info("edge_and_common_neighbor_num_and_common_neighbor_rate_tuple_list[:3]:{0}".format(edge_and_common_neighbor_num_and_common_neighbor_rate_tuple_list[:3]))
 
-            return edge_and_common_neighbor_num_and_common_neighbor_rate_tuple_list
+                if node1_and_degree_str_list[3] == "":
+                    node1_degree_list = []
+                else:
+                    node1_degree_list = node1_and_degree_str_list[3].split("///")
+                try:
+                    node2_and_degree_str_list = filter(lambda (network_type,\
+                                                                  is_directed,\
+                                                                  node,\
+                                                                  degree_str,\
+                                                                  in_degree_str,\
+                                                                  out_degree_str): node == node2,\
+                                                       node_tuple_list)[0]
+                except Exception as e:
+                    failure_compute = failure_compute + 1
+                    logging.error(e)
+                    continue
+
+                if node2_and_degree_str_list[3] == "":
+                    node2_degree_list = []
+                else:
+                    node2_degree_list = node2_and_degree_str_list[3].split("///")
+
+                # Merge current result
+                node1_degree_list = _flatten([node1_degree_list])
+                node2_degree_list = _flatten([node2_degree_list])
+
+                if len(node2_degree_list) <= len(node1_degree_list):
+                    common_degree_list = filter(lambda node: node in node1_degree_list, node2_degree_list)
+                else:
+                    common_degree_list = filter(lambda node: node in node2_degree_list, node1_degree_list)
+                common_degree_str_list_in_network.append("///".join(map(str, common_degree_list)))
+                common_degree_num_list_in_network.append(len(common_degree_list))
+                common_edge_tuple_list_in_network.append((node1, node2))
+                common_degree_rate_list_in_network.append(len(common_degree_list)/float(len(node1_degree_list)+len(node2_degree_list)))
+
+                success_compute = success_compute + 1
+
+            # Merge all results
+            degree_data_tuple_list_in_network = map(lambda edge_tuple, degree_str, degree_num, degree_rate:\
+                                                        (edge_tuple, degree_str, degree_num, degree_rate),\
+                                                    common_edge_tuple_list_in_network,\
+                                                    common_degree_str_list_in_network,\
+                                                    common_degree_num_list_in_network,\
+                                                    common_degree_rate_list_in_network\
+                                                    )
+            logging.info("len(degree_data_tuple_list_in_network):{0}".format(len(degree_data_tuple_list_in_network)))
+            logging.info("degree_data_tuple_list_in_network[:3]:{0}".format(degree_data_tuple_list_in_network[:3]))
+            return degree_data_tuple_list_in_network
+
 
         # sub-function
         def sql_generator(database_name, connection_table_name, network_type, is_directed, node1, node2, common_neighbor_str, common_neighbor_num, common_neighbor_rate):
@@ -209,9 +229,9 @@ class ComputeEdgeProperty(object):
                          SET common_neighbor_str = '{common_neighbor_str}',
                              common_neighbor_num = {common_neighbor_num},
                              common_neighbor_rate = {common_neighbor_rate}
-                         WHERE network_type = '{network_type}',
-                               is_directed = {is_directed},
-                               node1 = {node1},
+                         WHERE network_type = '{network_type}' AND
+                               is_directed = {is_directed} AND
+                               node1 = {node1} AND
                                node2 = {node2}"""\
                     .format(database_name = database_name, table_name = connection_table_name,\
                             common_neighbor_str = common_neighbor_str, common_neighbor_num = common_neighbor_num, common_neighbor_rate = common_neighbor_rate,\
@@ -226,25 +246,45 @@ class ComputeEdgeProperty(object):
                 logging.error(e)
             return sql
 
+        # sub-function
+        def execute_update_sql_for_database(self, network_type, is_directed, database_name, connection_table_table, sql_list):
+            cursor = self.con.cursor()
+            sql_list_length = len(sql_list)
+            success_update = 0
+            failure_update = 0
+            for sql_idx in xrange(len(sql_list)):
+                sql = sql_list[sql_idx]
+                if (sql_idx % 1000 == 0 and sql_idx > 998) or (sql_idx == sql_list_length-1):
+                    logging.info("============== update {idx}th sql for {network_type}.{is_directed} network ==============".format(idx = sql_idx, network_type = network_type, is_directed = is_directed))
+                    logging.info("sql_index:{idx}, finish rate:{rate}".format(idx = sql_idx, rate = float(sql_idx+1)/sql_list_length))
+                    logging.info("success_rate:{success_rate}".format(success_rate = success_update / float(success_update + failure_update + 0.0001)))
+                    logging.info("success_update:{success}, failure_update:{failure}".format(success = success_update, failure = failure_update))
+                try:
+                    cursor.execute(sql)
+                    self.con.commit()
+                    success_update = success_update + 1
+                except MySQLdb.Error, e:
+                    self.con.rollback()
+                    logging.error("Failed in update {database}.{table} in MySQL.".format(database = database_name, table = connection_table_name))
+                    logging.error("MySQL Error {error_num}: {error_info}.".format(error_num = e.args[0], error_info = e.args[1]))
+                    logging.error(sql)
+                    failure_update = failure_update + 1
+                    continue
 
-
+        # start
+        # get data from database
         node_tuple_list, connection_tuple_list = get_node_and_connection_data_from_database(self = self,\
                                                                                             database_name = database_name,\
                                                                                             node_table_name = node_table_name,\
                                                                                             connection_table_name = connection_table_name)
-
-        #bio_directed_graph = create_graph_for_network(network_type = "bio", is_directed = 1, connection_tuple_list = connection_tuple_list)
-
-        bio_undirected_graph = create_graph_for_network(network_type = "bio", is_directed = 0, connection_tuple_list = connection_tuple_list)
-        info_undirected_graph = create_graph_for_network(network_type = "info", is_directed = 0, connection_tuple_list = connection_tuple_list)
-        social_undirected_graph = create_graph_for_network(network_type = "social", is_directed = 0, connection_tuple_list = connection_tuple_list)
-
-        bio_undirected_common_node_list = find_common_node_in_graph(G = bio_undirected_graph, network_type = "bio", is_directed = 0, node_tuple_list = node_tuple_list)
-        info_undirected_common_node_list = find_common_node_in_graph(G = info_undirected_graph, network_type = "info", is_directed = 0, node_tuple_list = node_tuple_list)
-        social_undirected_common_node_list = find_common_node_in_graph(G = social_undirected_graph, network_type = "social", is_directed = 0, node_tuple_list = node_tuple_list)
-
-        bio_undirected_update_sql_list = map(lambda (node1,\
-                                                     node2,\
+        '''
+        # bio un
+        bio_undirected_common_node_list = compute_common_degree_in_network(network_type = "bio",\
+                                                                           is_directed = 0,\
+                                                                           node_tuple_list = node_tuple_list,\
+                                                                           connection_tuple_list = connection_tuple_list)
+        bio_undirected_update_sql_list = map(lambda ((node1,\
+                                                     node2),\
                                                      common_neighbor_str,\
                                                      common_neighbor_num,\
                                                      common_neighbor_rate):\
@@ -262,12 +302,56 @@ class ComputeEdgeProperty(object):
                                              )
         logging.info("len(bio_undirected_update_sql_list:{0}".format(len(bio_undirected_update_sql_list)))
         logging.info("bio_undirected_update_sql_list[:3]:{0}".format(bio_undirected_update_sql_list[:3]))
+        execute_update_sql_for_database(self = self,\
+                                        network_type = "bio",\
+                                        is_directed = 0,\
+                                        database_name = database_name,\
+                                        connection_table_table = connection_table_name,\
+                                        sql_list = bio_undirected_update_sql_list)
 
-        info_undirected_update_sql_list = map(lambda (node1,\
-                                                     node2,\
+
+        # bio di
+        bio_directed_common_node_list = compute_common_degree_in_network(network_type = "bio",\
+                                                                           is_directed = 1,\
+                                                                           node_tuple_list = node_tuple_list,\
+                                                                           connection_tuple_list = connection_tuple_list)
+        bio_directed_update_sql_list = map(lambda ((node1,\
+                                                     node2),\
                                                      common_neighbor_str,\
                                                      common_neighbor_num,\
                                                      common_neighbor_rate):\
+                                                 sql_generator(database_name = database_name,\
+                                                               connection_table_name = connection_table_name,\
+                                                               network_type = "bio",\
+                                                               is_directed = 1,\
+                                                               node1 = node1,\
+                                                               node2 = node2,\
+                                                               common_neighbor_str = common_neighbor_str,\
+                                                               common_neighbor_num = common_neighbor_num,\
+                                                               common_neighbor_rate = common_neighbor_rate\
+                                                               ),\
+                                             bio_directed_common_node_list,\
+                                             )
+        logging.info("len(bio_directed_update_sql_list:{0}".format(len(bio_directed_update_sql_list)))
+        logging.info("bio_directed_update_sql_list[:3]:{0}".format(bio_directed_update_sql_list[:3]))
+        execute_update_sql_for_database(self = self,\
+                                        network_type = "bio",\
+                                        is_directed = 1,\
+                                        database_name = database_name,\
+                                        connection_table_table = connection_table_name,\
+                                        sql_list = bio_directed_update_sql_list)
+
+
+        # info un
+        info_undirected_common_node_list = compute_common_degree_in_network(network_type = "info",\
+                                                                            is_directed = 0,\
+                                                                            node_tuple_list = node_tuple_list,\
+                                                                            connection_tuple_list = connection_tuple_list)
+        info_undirected_update_sql_list = map(lambda ((node1,\
+                                                      node2),\
+                                                      common_neighbor_str,\
+                                                      common_neighbor_num,\
+                                                      common_neighbor_rate):\
                                                  sql_generator(database_name = database_name,\
                                                                connection_table_name = connection_table_name,\
                                                                network_type = "info",\
@@ -282,12 +366,56 @@ class ComputeEdgeProperty(object):
                                              )
         logging.info("len(info_undirected_update_sql_list:{0}".format(len(info_undirected_update_sql_list)))
         logging.info("info_undirected_update_sql_list[:3]:{0}".format(info_undirected_update_sql_list[:3]))
+        execute_update_sql_for_database(self = self,\
+                                        network_type = "info",\
+                                        is_directed = 0,\
+                                        database_name = database_name,\
+                                        connection_table_table = connection_table_name,\
+                                        sql_list = info_undirected_update_sql_list)
 
-        social_undirected_update_sql_list = map(lambda (node1,\
-                                                     node2,\
-                                                     common_neighbor_str,\
-                                                     common_neighbor_num,\
-                                                     common_neighbor_rate):\
+
+        # info di
+        info_directed_common_node_list = compute_common_degree_in_network(network_type = "info",\
+                                                                            is_directed = 1,\
+                                                                            node_tuple_list = node_tuple_list,\
+                                                                            connection_tuple_list = connection_tuple_list)
+        info_directed_update_sql_list = map(lambda ((node1,\
+                                                      node2),\
+                                                      common_neighbor_str,\
+                                                      common_neighbor_num,\
+                                                      common_neighbor_rate):\
+                                                 sql_generator(database_name = database_name,\
+                                                               connection_table_name = connection_table_name,\
+                                                               network_type = "info",\
+                                                               is_directed = 1,\
+                                                               node1 = node1,\
+                                                               node2 = node2,\
+                                                               common_neighbor_str = common_neighbor_str,\
+                                                               common_neighbor_num = common_neighbor_num,\
+                                                               common_neighbor_rate = common_neighbor_rate\
+                                                               ),\
+                                             info_directed_common_node_list,\
+                                             )
+        logging.info("len(info_directed_update_sql_list:{0}".format(len(info_directed_update_sql_list)))
+        logging.info("info_directed_update_sql_list[:3]:{0}".format(info_directed_update_sql_list[:3]))
+        execute_update_sql_for_database(self = self,\
+                                        network_type = "info",\
+                                        is_directed = 1,\
+                                        database_name = database_name,\
+                                        connection_table_table = connection_table_name,\
+                                        sql_list = info_directed_update_sql_list)
+
+
+        # social un
+        social_undirected_common_node_list = compute_common_degree_in_network(network_type = "social",\
+                                                                            is_directed = 0,\
+                                                                            node_tuple_list = node_tuple_list,\
+                                                                            connection_tuple_list = connection_tuple_list)
+        social_undirected_update_sql_list = map(lambda ((node1,\
+                                                      node2),\
+                                                      common_neighbor_str,\
+                                                      common_neighbor_num,\
+                                                      common_neighbor_rate):\
                                                  sql_generator(database_name = database_name,\
                                                                connection_table_name = connection_table_name,\
                                                                network_type = "social",\
@@ -302,12 +430,48 @@ class ComputeEdgeProperty(object):
                                              )
         logging.info("len(social_undirected_update_sql_list:{0}".format(len(social_undirected_update_sql_list)))
         logging.info("social_undirected_update_sql_list[:3]:{0}".format(social_undirected_update_sql_list[:3]))
+        execute_update_sql_for_database(self = self,\
+                                        network_type = "social",\
+                                        is_directed = 0,\
+                                        database_name = database_name,\
+                                        connection_table_table = connection_table_name,\
+                                        sql_list = social_undirected_update_sql_list)
+        '''
 
 
-
+        # social di
+        social_directed_common_node_list = compute_common_degree_in_network(network_type = "social",\
+                                                                            is_directed = 1,\
+                                                                            node_tuple_list = node_tuple_list,\
+                                                                            connection_tuple_list = connection_tuple_list)
+        social_directed_update_sql_list = map(lambda ((node1,\
+                                                      node2),\
+                                                      common_neighbor_str,\
+                                                      common_neighbor_num,\
+                                                      common_neighbor_rate):\
+                                                 sql_generator(database_name = database_name,\
+                                                               connection_table_name = connection_table_name,\
+                                                               network_type = "social",\
+                                                               is_directed = 1,\
+                                                               node1 = node1,\
+                                                               node2 = node2,\
+                                                               common_neighbor_str = common_neighbor_str,\
+                                                               common_neighbor_num = common_neighbor_num,\
+                                                               common_neighbor_rate = common_neighbor_rate\
+                                                               ),\
+                                             social_directed_common_node_list,\
+                                             )
+        logging.info("len(social_directed_update_sql_list:{0}".format(len(social_directed_update_sql_list)))
+        logging.info("social_directed_update_sql_list[:3]:{0}".format(social_directed_update_sql_list[:3]))
+        execute_update_sql_for_database(self = self,\
+                                        network_type = "social",\
+                                        is_directed = 1,\
+                                        database_name = database_name,\
+                                        connection_table_table = connection_table_name,\
+                                        sql_list = social_directed_update_sql_list)
 
 ################################### PART3 CLASS TEST ##################################
-
+'''
 # Initialization
 database_name = "LinkPredictionDB"
 connection_table_name = "connection_table"
@@ -322,3 +486,4 @@ EdgeComputer = ComputeEdgeProperty(database_name = database_name,\
 EdgeComputer.compute_common_degree_in_different_network(database_name = database_name,\
                                                         node_table_name = node_table_name,\
                                                         connection_table_name = connection_table_name)
+'''
