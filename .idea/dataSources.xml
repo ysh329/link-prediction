@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="3050406908">
+  <component name="DataSourceManagerImpl" format="xml" hash="1870908747">
     <data-source source="LOCAL" name="MySQL - LinkPredictionDB@localhost" uuid="42ce17b2-91c5-442e-95c5-b67d86b55bb2">
       <driver-ref>mysql</driver-ref>
       <synchronize>true</synchronize>
@@ -13,7 +13,6 @@
         <property name="characterSetResults" value="utf8" />
         <property name="yearIsDateType" value="false" />
       </driver-properties>
-      <libraries />
     </data-source>
   </component>
 </project>
